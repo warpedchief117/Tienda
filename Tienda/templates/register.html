@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+
+    <div class="bg-white shadow-md rounded-lg p-8 w-96 text-center">
+        <h2 class="text-2xl font-bold text-red-600 mb-6">Registro de Usuario</h2>
+        
+        <form action="{% url 'home' %}" method="POST">
+            <div class="mb-4">
+                <label for="nombre" class="block text-left text-gray-700 font-semibold">Nombre</label>
+                <input type="text" id="nombre" name="nombre" class="w-full border-gray-300 rounded-lg p-2 focus:outline-none focus:ring focus:border-red-600" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="edad" class="block text-left text-gray-700 font-semibold">Edad</label>
+                <input type="number" id="edad" name="edad" class="w-full border-gray-300 rounded-lg p-2 focus:outline-none focus:ring focus:border-red-600" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="direccion" class="block text-left text-gray-700 font-semibold">Dirección</label>
+                <input type="text" id="direccion" name="direccion" class="w-full border-gray-300 rounded-lg p-2 focus:outline-none focus:ring focus:border-red-600" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="email" class="block text-left text-gray-700 font-semibold">Correo Electrónico</label>
+                <input type="email" id="email" name="email" class="w-full border-gray-300 rounded-lg p-2 focus:outline-none focus:ring focus:border-red-600" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="numero" class="block text-left text-gray-700 font-semibold">Número de Trabajador</label>
+                <input type="text" id="numero" name="numero" class="w-full border-gray-300 rounded-lg p-2 focus:outline-none focus:ring focus:border-red-600" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="telefono" class="block text-left text-gray-700 font-semibold">Número Telefónico</label>
+                <input type="tel" id="telefono" name="telefono" class="w-full border-gray-300 rounded-lg p-2 focus:outline-none focus:ring focus:border-red-600" required>
+            </div>
+
+            <button type="submit" class="w-full bg-red-600 text-white font-bold py-2 rounded-lg hover:bg-red-500 transition">Registrarse</button>
+        </form>
+
+        <div class="mt-4 text-sm text-gray-600">
+            <p>¿Ya tienes una cuenta? <a href="{% url 'login' %}" class="text-red-600 hover:underline">Iniciar sesión</a></p>
+        </div>
+    </div>
+
+</body>
+</html>
