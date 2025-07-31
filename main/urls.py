@@ -16,8 +16,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
+from Tienda import views
+
 
 urlpatterns = [
+    path('', TemplateView.as_view(template_name='landing.html'), name='landing'),
     path('admin/', admin.site.urls),
-    path('', include('Tienda.urls')),  # Include the URLs from the Tienda app
+    path('tienda/', include('Tienda.urls')),# Include the URLs from the Tienda app
+    path('contacto/', views.contacto, name='contacto'), 
+    path('about-us/', views.aboutus, name='about-us'), 
+    #path('inventario/', include('Inventario.urls')), # Uncomment if you have an Inventario app
+    #path('inventario/', include('Inventario.urls')),# Include the URLs from the Inventario app
+    #path('ventas/', include('Ventas.urls')),  PARA APP VENTAS.
 ]
+
+admin.site.site_header = "Administración de tienda"
+admin.site.site_title = "Tienda"
