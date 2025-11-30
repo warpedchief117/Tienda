@@ -15,7 +15,7 @@
       </div>
     {% endif %}
 
-    <form method="POST" action="{% url 'Tienda:login' %}">
+    <form method="POST" action="{% url 'tienda:login' %}">
       {% csrf_token %}
 
       <div class="mb-4">
@@ -32,7 +32,7 @@
     </form>
 
     <div class="flex justify-between mt-4 text-sm text-gray-600">
-      <a href="{% url 'Tienda:registro_cliente' %}" class="hover:text-red-600">Registrarse</a>
+      <a href="{% url 'tienda:registro_cliente' %}" class="hover:text-red-600">Registrarse</a>
       <a href="#" class="hover:text-red-600">¿Olvidaste tu contraseña?</a>
     </div>
   </div>

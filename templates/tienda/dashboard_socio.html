@@ -1,0 +1,72 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Panel del Socio - Comercializadora Modelo{% endblock %}
+
+{% block content %}
+<section class="py-10">
+  <div class="max-w-6xl mx-auto px-6">
+    <!-- Encabezado -->
+    <header class="mb-8 text-center">
+      <h2 class="text-4xl md:text-5xl font-extrabold text-red-600 tracking-tight">Bienvenido al Panel del Socio</h2>
+      <p class="mt-2 text-gray-600">Accesos rápidos y productos destacados</p>
+    </header>
+
+    <!-- Acciones rápidas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <a href="/ventas/" class="group block rounded-2xl bg-white/60 backdrop-blur-sm p-6 shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition focus:outline-none focus:ring-2 focus:ring-red-200 text-center">
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-lg flex items-center justify-center bg-red-100 text-red-600 mb-3 group-hover:bg-red-200 transition">
+            <i class="fas fa-cash-register text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800">Registrar venta</h3>
+          <p class="mt-1 text-sm text-gray-500">Accede al módulo de ventas</p>
+        </div>
+        <div class="absolute -mt-6 left-6 right-6 h-1 rounded-t-2xl bg-gradient-to-r from-red-300 to-red-600 opacity-0 group-hover:opacity-100 transition"></div>
+      </a>
+
+      <a href="{% url 'inventario:dashboard_inventario' %}" class="group block rounded-2xl bg-white/60 backdrop-blur-sm p-6 shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition focus:outline-none focus:ring-2 focus:ring-green-200 text-center">
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-lg flex items-center justify-center bg-green-100 text-green-600 mb-3 group-hover:bg-green-200 transition">
+            <i class="fas fa-boxes text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800">Inventario</h3>
+          <p class="mt-1 text-sm text-gray-500">Consulta y gestiona productos</p>
+        </div>
+        <div class="absolute -mt-6 left-6 right-6 h-1 rounded-t-2xl bg-gradient-to-r from-green-300 to-emerald-600 opacity-0 group-hover:opacity-100 transition"></div>
+      </a>
+
+      <a href="{% url 'inventario:reportes' %}" class="group block rounded-2xl bg-white/60 backdrop-blur-sm p-6 shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition focus:outline-none focus:ring-2 focus:ring-blue-200 text-center">
+        <div class="flex flex-col items-center">
+          <div class="w-14 h-14 rounded-lg flex items-center justify-center bg-blue-100 text-blue-600 mb-3 group-hover:bg-blue-200 transition">
+            <i class="fas fa-chart-line text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-gray-800">Reportes</h3>
+          <p class="mt-1 text-sm text-gray-500">Visualiza estadísticas de ventas</p>
+        </div>
+        <div class="absolute -mt-6 left-6 right-6 h-1 rounded-t-2xl bg-gradient-to-r from-blue-300 to-indigo-600 opacity-0 group-hover:opacity-100 transition"></div>
+      </a>
+    </div>
+
+    <!-- Productos destacados -->
+    <h3 class="text-2xl font-bold text-red-600 mb-6 text-center">Productos destacados</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {% for producto in productos %}
+        <div class="relative bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-sm hover:shadow-lg transform hover:-translate-y-1 transition">
+          <div class="flex justify-center mb-4">
+            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" class="h-40 w-full object-cover rounded-lg shadow-sm">
+          </div>
+          <h4 class="text-xl font-semibold text-gray-800 mb-1">{{ producto.nombre }}</h4>
+          <p class="text-sm text-gray-600 mb-4">{{ producto.descripcion|truncatewords:12 }}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-lg font-extrabold text-gray-900">{{ producto.precio|default:"" }}{% if producto.precio %} MXN{% endif %}</span>
+            <a href="{% url 'inventario:dashboard_inventario' %}" class="text-sm text-blue-600 font-medium hover:underline">Ver inventario</a>
+          </div>
+          <div class="absolute -top-2 left-6 right-6 h-1 rounded-t-2xl bg-gradient-to-r from-gray-200 to-gray-300"></div>
+        </div>
+      {% empty %}
+        <p class="col-span-3 text-center text-gray-500">No hay productos disponibles.</p>
+      {% endfor %}
+    </div>
+
+
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+{% block content %}
+
+<h2 class="text-2xl font-bold text-gray-800 mb-4">
+  📦 Selecciona una etiqueta para el producto: <span class="text-blue-600">{{ producto.nombre }}</span>
+</h2>
+
+<div class="bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded mb-6">
+  <p>
+    Este producto aún no tiene código de barras. Selecciona el tipo de etiqueta que mejor se adapte al tamaño del empaque. El sistema generará automáticamente un código interno compatible.
+  </p>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  {% for etiqueta in etiquetas %}
+    <form method="post" class="bg-white border border-gray-200 rounded-lg shadow hover:shadow-md transition p-6">
+      {% csrf_token %}
+      <h3 class="text-lg font-semibold text-blue-600 mb-2">{{ etiqueta.nombre }}</h3>
+      <p class="text-sm text-gray-700"><strong>Tamaño:</strong> {{ etiqueta.tamaño }}</p>
+      <p class="text-sm text-gray-700 mb-4"><strong>Descripción:</strong> {{ etiqueta.descripcion }}</p>
+      <input type="hidden" name="tipo_codigo" value="{{ etiqueta.tipo }}">
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        Usar esta etiqueta
+      </button>
+    </form>
+  {% endfor %}
+</div>
+
+{% endblock %}

@@ -1,16 +1,61 @@
-let lastScrollTop = 0;
-const navbar = document.querySelector("nav");
+document.addEventListener("DOMContentLoaded", function () {
+  // Menú hamburguesa (móvil)
+  const toggle = document.getElementById("menu-toggle");
+  const menu = document.getElementById("menu");
 
-window.addEventListener("scroll", function () {
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  if (toggle && menu) {
+    toggle.addEventListener("click", () => {
+      menu.classList.toggle("opacity-0");
+      menu.classList.toggle("pointer-events-none");
+      menu.classList.toggle("translate-y-0");
+      menu.classList.toggle("-translate-y-4");
+    });
 
-  if (scrollTop > lastScrollTop) {
-    navbar.style.transform = "translateY(-100%)";
-    navbar.style.transition = "transform 0.3s ease-in-out";
-  } else {
-    navbar.style.transform = "translateY(0)";
-    navbar.style.transition = "transform 0.3s ease-in-out";
+    const menuLinks = menu.querySelectorAll("a");
+    menuLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        menu.classList.add("opacity-0");
+        menu.classList.add("pointer-events-none");
+        menu.classList.remove("translate-y-0");
+        menu.classList.add("-translate-y-4");
+      });
+    });
   }
 
-  lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+  // Ocultar navbar al hacer scroll hacia abajo
+  const navbar = document.getElementById("navbar");
+  let lastScrollTop = 0;
+
+  window.addEventListener("scroll", function () {
+    const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (currentScroll > lastScrollTop) {
+      navbar.classList.add("transform", "-translate-y-full");
+    } else {
+      navbar.classList.remove("-translate-y-full");
+    }
+
+    lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+  });
+
+  // Dropdown de perfil (desktop)
+  const profileBtn = document.getElementById("profileMenuBtn");
+  const profileDropdown = document.getElementById("profileDropdown");
+
+  if (profileBtn && profileDropdown) {
+    profileBtn.addEventListener("click", (e) => {
+      e.stopPropagation(); // evita que el clic se propague y cierre el menú
+      profileDropdown.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+      if (
+        !profileDropdown.classList.contains("hidden") &&
+        !profileDropdown.contains(e.target) &&
+        !profileBtn.contains(e.target)
+      ) {
+        profileDropdown.classList.add("hidden");
+      }
+    });
+  }
 });

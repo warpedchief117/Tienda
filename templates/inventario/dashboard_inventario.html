@@ -1,0 +1,192 @@
+{% extends 'partials/base.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto p-8 space-y-10">
+
+  <!-- Encabezado -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-4xl font-extrabold text-gray-900">📊 Centro de Inventario</h1>
+    <span class="text-sm text-gray-500">Última actualización: {{ ahora|date:"d/m/Y H:i" }}</span>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow p-6 text-center">
+      <p class="text-sm opacity-80">Productos</p>
+      <p class="text-3xl font-bold">{{ productos_total }}</p>
+    </div>
+    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg shadow p-6 text-center">
+      <p class="text-sm opacity-80">Stock total</p>
+      <p class="text-3xl font-bold">{{ stock_total }}</p>
+    </div>
+    <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg shadow p-6 text-center">
+      <p class="text-sm opacity-80">Ubicaciones</p>
+      <p class="text-3xl font-bold">{{ ubicaciones|length }}</p>
+    </div>
+    <div class="bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow p-6 text-center">
+      <p class="text-sm opacity-80">Críticos (bajo stock)</p>
+      <p class="text-3xl font-bold">{{ bajos|length }}</p>
+    </div>
+  </div>
+
+  <!-- Alertas automáticas -->
+  {% if bajos|length > 0 %}
+  <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded">
+    ⚠️ Atención: Hay {{ bajos|length }} productos con stock crítico. Revisa la tabla y toma acción.
+  </div>
+  {% endif %}
+
+  <!-- Gráficas -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="bg-white shadow rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        📉 Productos con bajo stock
+      </h2>
+      <canvas id="chartBajoStock" class="h-64"></canvas>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-6">
+      <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+        🐢 Productos con menor rotación
+      </h2>
+      <canvas id="chartMenosRotacion" class="h-64"></canvas>
+    </div>
+  </div>
+
+  <!-- Tabla dinámica de productos críticos -->
+  <div class="mt-6">
+    <h3 class="text-lg font-semibold mb-4">📋 Detalle de productos críticos</h3>
+
+    <!-- Filtro por ubicación -->
+    <form method="get" class="mb-4 flex gap-4">
+      <select name="ubicacion_id" class="border rounded px-3 py-2">
+        <option value="">Todas las ubicaciones</option>
+        {% for u in ubicaciones %}
+          <option value="{{ u.id }}"
+            {% if ubicacion_seleccionada and ubicacion_seleccionada.id == u.id %}selected{% endif %}>
+            {{ u.nombre }}
+          </option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Filtrar</button>
+
+        <a href="{% url 'inventario:exportar_criticos' %}?ubicacion_id={{ ubicacion_seleccionada.id }}" 
+        class="bg-red-600 text-white px-4 py-2 rounded">⬇️ PDF</a>
+    </form>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-200 rounded-lg shadow">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Producto</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Stock actual</th>
+            <th class="px-4 py-2 text-left text-sm font-medium text-gray-700">Ubicación</th>
+            <th class="px-4 py-2 text-center text-sm font-medium text-gray-700">Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in bajos %}
+          <tr class="border-t">
+            <td class="px-4 py-2">{{ inv.producto.nombre }}</td>
+            <td class="px-4 py-2">
+              {% if inv.cantidad_actual <= 5 %}
+                <span class="bg-red-100 text-red-700 px-2 py-1 rounded">🔴 {{ inv.cantidad_actual }}</span>
+              {% elif inv.cantidad_actual <= 15 %}
+                <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded">🟡 {{ inv.cantidad_actual }}</span>
+              {% else %}
+                <span class="bg-green-100 text-green-700 px-2 py-1 rounded">🟢 {{ inv.cantidad_actual }}</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-2">{{ inv.ubicacion.nombre }}</td>
+            <td class="px-4 py-2 text-center">
+              <a href="{% url 'inventario:agregar_inventario' inv.producto.id inv.ubicacion.id %}" 
+                 class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">
+                ➕ Agregar inventario
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="4" class="px-4 py-2 text-center text-gray-500">
+              No hay productos críticos registrados.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Acciones rápidas -->
+  <div>
+    <h2 class="text-lg font-semibold mb-4">⚡ Acciones rápidas</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <a href="{% url 'inventario:nuevo_producto' %}" 
+         class="bg-blue-600 text-white p-6 rounded-lg shadow hover:scale-105 transform transition text-center">
+        ➕ Registrar producto nuevo
+      </a>
+      <a href="{% url 'inventario:lista_productos' %}" 
+         class="bg-green-600 text-white p-6 rounded-lg shadow hover:scale-105 transform transition text-center">
+        📦 Agregar inventario
+      </a>
+      <a href="{% url 'inventario:transferir_inventario' %}" 
+         class="bg-yellow-500 text-white p-6 rounded-lg shadow hover:scale-105 transform transition text-center">
+        🔄 Transferencia
+      </a>
+      <a href="{% url 'inventario:ajustes' %}" 
+         class="bg-red-600 text-white p-6 rounded-lg shadow hover:scale-105 transform transition text-center">
+        🛠️ Ajustes / Salidas
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Datos para bajo stock
+  const bajoStockLabels = [{% for inv in bajos %}'{{ inv.producto.nombre|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+  const bajoStockData = [{% for inv in bajos %}{{ inv.cantidad_actual }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+  new Chart(document.getElementById('chartBajoStock'), {
+    type: 'bar',
+    data: {
+      labels: bajoStockLabels,
+      datasets: [{
+        label: 'Stock actual',
+        data: bajoStockData,
+        backgroundColor: '#ef4444',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+
+  // Datos para menor rotación
+  const menosRotLabels = [{% for p in menos_rotacion %}'{{ p.nombre|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+  const menosRotData = [{% for p in menos_rotacion %}{{ p.movimientos_count|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+
+  new Chart(document.getElementById('chartMenosRotacion'), {
+    type: 'bar',
+    data: {
+      labels: menosRotLabels,
+      datasets: [{
+        label: 'Movimientos registrados',
+        data: menosRotData,
+        backgroundColor: '#3b82f6',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { 
+        y: { beginAtZero: true },
+        x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 0 } }
+      }
+    }
+  });
+</script>
+{% endblock %}

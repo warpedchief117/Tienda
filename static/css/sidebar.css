@@ -1,0 +1,114 @@
+/* === Base === */
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#main-content {
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  transition: margin-left 0.3s ease;
+}
+
+/* === Sidebar base === */
+#sidebar {
+  position: fixed;
+  top: 4rem;
+  left: 0;
+  width: 4rem;
+  max-height: calc(100vh - 4rem);
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: width 0.3s ease-in-out;
+  z-index: 30;
+}
+
+/* Sidebar anclado */
+#sidebar.pinned {
+  width: 16rem;
+}
+
+/* Hover expand en escritorio */
+@media (min-width: 768px) {
+  #sidebar:not(.pinned):hover {
+    width: 16rem;
+  }
+}
+
+/* Texto oculto por defecto */
+.sidebar-text {
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  white-space: nowrap;
+}
+
+#sidebar.pinned .sidebar-text,
+#sidebar:hover .sidebar-text {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Enlaces del sidebar */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  color: #dc2626;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Botón de anclaje */
+#sidebar-tab {
+  z-index: 101;
+}
+
+/* Móvil: comportamiento responsive */
+@media (max-width: 767px) {
+  #sidebar {
+    top: 4rem;
+    bottom: 4rem;
+    height: calc(100vh - 8rem);
+    transform: translateX(-100%);
+    width: 16rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  #sidebar.open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* === Empujar contenido cuando sidebar está fijado === */
+/* Contenedor principal */
+#main-content {
+  max-width: 1000px;         /* ancho máximo del contenido */
+  margin: 0 auto;            /* centrado horizontal */
+  padding-left: 0;           /* sin desplazamiento por defecto */
+  padding-right: 1rem;       /* espacio lateral opcional */
+  transition: padding-left 0.3s ease;
+}
+
+/* Cuando el sidebar está anclado */
+body.sidebar-open #main-content {
+  padding-left: calc(0rem + 2vw); /* o calc(16rem + 2vw) si el sidebar está expandido */
+}
+
+/* Móvil: ajustar padding cuando el sidebar está abierto */

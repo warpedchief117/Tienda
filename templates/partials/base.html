@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Comercializadora Modelo{% endblock %}</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- AOS Animaciones -->
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
+
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+  <link rel="stylesheet" href="{% static 'css/slide.css' %}">
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+</head>
+<body class="sidebar-open min-h-screen flex flex-col bg-gradient-to-br from-white to-red-50 text-gray-800">
+
+  <!-- Navbar fijo arriba -->
+  {% include 'partials/navvar.html' %}
+
+  <!-- Sidebar fijo a la izquierda -->
+  {% include 'partials/sidebar.html' %}
+
+  <!-- Layout principal con espacio para navbar fijo -->
+  <div class="pt-16 flex flex-col md:flex-row flex-1 transition-all duration-300" id="layout">
+    <main id="main-content" class="max-w-4xl p-4 md:p-6 pb-24 min-h-[calc(100vh-4rem)] mx-auto transition-all duration-300">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <!-- Footer -->
+  {% include 'partials/footer.html' %}
+
+  <!-- Scripts -->
+  <script src="{% static 'js/sidebar.js' %}" defer></script>
+  <script src="{% static 'js/navbar.js' %}" defer></script>
+  <script src="{% static 'js/form-handler.js' %}" defer></script>
+  <script src="{% static 'js/layout.js' %}" defer></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+    AOS.init({ once: true, duration: 800 });
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

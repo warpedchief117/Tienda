@@ -1,0 +1,367 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes fadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+.animate-fadeOut {
+  animation: fadeOut 0.3s ease-in-out;
+}
+</style>
+
+    <div class="flex items-center justify-between mb-6 border-b pb-2">
+      <h2 class="text-3xl font-bold text-gray-800">Productos existentes</h2>
+
+      <div class="flex gap-3">
+        <!-- Barra buscadora -->
+        <input type="text" id="buscador"
+              placeholder="Buscar producto..."
+              class="px-3 py-2 border rounded-lg shadow-sm focus:ring focus:ring-blue-300 w-64">
+
+        <!-- Botón registrar producto -->
+        <a href="{% url 'inventario:nuevo_producto' %}"
+          class="bg-green-600 text-white px-4 py-2 rounded-lg shadow hover:bg-green-700 transition">
+          ➕ Registrar producto
+        </a>
+      </div>
+    </div>
+
+
+  <!-- Kanban -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+<!-- Columna: Bodega Interna -->
+<div class="dropzone bg-gray-50 rounded-lg shadow-md p-4" data-destino="{{ ubicacion_bodega_interna.id }}">
+  <h3 class="text-xl font-semibold text-gray-700 mb-4">📦 Bodega Interna</h3>
+  <div class="space-y-4">
+    {% for producto in productos %}
+      {% for inv in producto.inventarios.all %}
+        {% if inv.ubicacion.nombre == "Bodega Interna" and inv.cantidad_actual > 0 %}
+          <div class="bg-white rounded-lg shadow p-4 producto-card"
+               draggable="true"
+               data-producto="{{ producto.id }}"
+               data-origen="{{ inv.ubicacion.id }}"
+               data-nombre="{{ producto.nombre }}"
+               data-descripcion="{{ producto.descripcion }}"
+               data-categoria="{% for cat in producto.categoria.all %}{{ cat.nombre }} {% endfor %}"
+               data-temporada="{% for temp in producto.temporada.all %}{{ temp.nombre }} {% endfor %}">
+
+            <!-- Botón y contenedor de etiqueta -->
+            <div class="mb-2">
+              {% if producto.codigo_barras and producto.tipo_codigo %}
+                <button onclick="mostrarEtiqueta(this)"
+                        data-url="{% url 'inventario:codigo_base64' producto.id %}"
+                        data-id="{{ producto.id }}"
+                        data-ubicacion="{{ inv.ubicacion.id }}"
+                        class="text-blue-600 hover:underline text-sm">
+                  <i class="fa-solid fa-barcode mr-1"></i> Ver etiqueta
+                </button>
+                <div id="etiqueta-{{ producto.id }}-{{ inv.ubicacion.id }}"
+                     class="mt-2 etiqueta-container bg-gray-50 border border-gray-200 rounded p-3 text-center text-sm shadow-sm"
+                     style="display: none;">
+                  <img id="img-{{ producto.id }}-{{ inv.ubicacion.id }}" class="h-20 mx-auto mb-2" />
+                  <div class="text-gray-700 font-mono tracking-widest">{{ producto.codigo_barras }}</div>
+                  <div class="text-xs text-gray-500 italic mt-1">Tipo: {{ producto.tipo_codigo|upper }}</div>
+                  <div class="flex justify-center gap-2 mt-3">
+                    <button onclick="imprimirEtiqueta('{{ producto.id }}','{{ inv.ubicacion.id }}')"
+                            class="text-xs text-white bg-blue-600 px-2 py-1 rounded">🖨️ Imprimir</button>
+                    <button onclick="descargarEtiqueta('{{ producto.id }}','{{ inv.ubicacion.id }}')"
+                            class="text-xs text-white bg-green-600 px-2 py-1 rounded">⬇️ Descargar</button>
+                  </div>
+                </div>
+              {% else %}
+                <span class="text-gray-400 italic text-sm">Sin código</span>
+              {% endif %}
+            </div>
+
+            <!-- Info del producto -->
+            <h4 class="text-lg font-bold text-gray-800">{{ producto.nombre }}</h4>
+            <p class="text-sm text-gray-600">{{ producto.descripcion }}</p>
+
+            <!-- Lista de atributos -->
+            <ul class="mt-3 text-sm text-gray-700 space-y-1">
+              <li>• Menudeo: ${{ producto.precio_menudeo }}</li>
+              <li>• Mayoreo: ${{ producto.precio_mayoreo }}</li>
+              <li>• Docena: ${{ producto.precio_docena }}</li>
+              <li>• Categoría:
+                {% for cat in producto.categoria.all %}
+                  {% if cat.padre %}
+                    <span class="block text-sm text-gray-700">Padre: {{ cat.padre.nombre }}</span>
+                    <span class="block text-sm text-gray-700">Subcategoría: {{ cat.nombre }}</span>
+                  {% endif %}
+                {% endfor %}
+              </li>
+              <li>• Cantidad: {{ inv.cantidad_actual }}</li>
+              <li>• Temporada:
+                {% for temp in producto.temporada.all %}
+                  {{ temp.nombre }}
+                {% empty %}
+                  Sin temporada
+                {% endfor %}
+              </li>
+            </ul>
+
+            {% if request.GET.updated == producto.id|stringformat:"s" %}
+              <div class="mt-2 bg-green-100 text-green-700 text-sm px-2 py-1 rounded">
+                ✅ Se agregaron {{ request.GET.cantidad }} piezas aquí!
+              </div>
+            {% endif %}
+
+            <!-- Botón agregar piezas -->
+            <a href="{% url 'inventario:agregar_inventario' producto.id inv.ubicacion.id %}" 
+              class="inline-block bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700">
+              ➕
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% empty %}
+      <p class="text-gray-500 italic">No hay productos en Bodega Interna.</p>
+    {% endfor %}
+  </div>
+</div>
+
+
+
+<!-- Columna: Moderna -->
+<div class="dropzone bg-gray-50 rounded-lg shadow-md p-4" data-destino="{{ ubicacion_moderna.id }}">
+  <h3 class="text-xl font-semibold text-gray-700 mb-4">🏬 Moderna</h3>
+  <div class="space-y-4">
+    {% for producto in productos %}
+      {% for inv in producto.inventarios.all %}
+        {% if inv.ubicacion.nombre == "Moderna" and inv.cantidad_actual > 0 %}
+          <div class="bg-white rounded-lg shadow p-4 producto-card"
+               draggable="true"
+               data-producto="{{ producto.id }}"
+               data-origen="{{ inv.ubicacion.id }}"
+               data-nombre="{{ producto.nombre }}"
+               data-descripcion="{{ producto.descripcion }}"
+               data-categoria="{% for cat in producto.categoria.all %}{{ cat.nombre }} {% endfor %}"
+               data-temporada="{% for temp in producto.temporada.all %}{{ temp.nombre }} {% endfor %}">
+
+            <!-- Botón y contenedor de etiqueta -->
+            <div class="mb-2">
+              {% if producto.codigo_barras and producto.tipo_codigo %}
+                <button onclick="mostrarEtiqueta(this)"
+                        data-url="{% url 'inventario:codigo_base64' producto.id %}"
+                        data-id="{{ producto.id }}"
+                        data-ubicacion="{{ inv.ubicacion.id }}"
+                        class="text-blue-600 hover:underline text-sm">
+                  <i class="fa-solid fa-barcode mr-1"></i> Ver etiqueta
+                </button>
+                <div id="etiqueta-{{ producto.id }}-{{ inv.ubicacion.id }}"
+                     class="mt-2 etiqueta-container bg-gray-50 border border-gray-200 rounded p-3 text-center text-sm shadow-sm"
+                     style="display: none;">
+                  <img id="img-{{ producto.id }}-{{ inv.ubicacion.id }}" class="h-20 mx-auto mb-2" />
+                  <div class="text-gray-700 font-mono tracking-widest">{{ producto.codigo_barras }}</div>
+                  <div class="text-xs text-gray-500 italic mt-1">Tipo: {{ producto.tipo_codigo|upper }}</div>
+                  <div class="flex justify-center gap-2 mt-3">
+                    <button onclick="imprimirEtiqueta('{{ producto.id }}','{{ inv.ubicacion.id }}')"
+                            class="text-xs text-white bg-blue-600 px-2 py-1 rounded">🖨️ Imprimir</button>
+                    <button onclick="descargarEtiqueta('{{ producto.id }}','{{ inv.ubicacion.id }}')"
+                            class="text-xs text-white bg-green-600 px-2 py-1 rounded">⬇️ Descargar</button>
+                  </div>
+                </div>
+              {% else %}
+                <span class="text-gray-400 italic text-sm">Sin código</span>
+              {% endif %}
+            </div>
+
+            <!-- Info del producto -->
+            <h4 class="text-lg font-bold text-gray-800">{{ producto.nombre }}</h4>
+            <p class="text-sm text-gray-600">{{ producto.descripcion }}</p>
+
+            <ul class="mt-3 text-sm text-gray-700 space-y-1">
+              <li>• Menudeo: ${{ producto.precio_menudeo }}</li>
+              <li>• Mayoreo: ${{ producto.precio_mayoreo }}</li>
+              <li>• Docena: ${{ producto.precio_docena }}</li>
+              <li>• Categoría:
+                {% for cat in producto.categoria.all %}
+                  {% if cat.padre %}
+                    <span class="block text-sm text-gray-700">Padre: {{ cat.padre.nombre }}</span>
+                    <span class="block text-sm text-gray-700">Subcategoría: {{ cat.nombre }}</span>
+                  {% endif %}
+                {% endfor %}
+              </li>
+              <li>• Cantidad: {{ inv.cantidad_actual }}</li>
+              <li>• Temporada:
+                {% for temp in producto.temporada.all %}
+                  {{ temp.nombre }}
+                {% empty %}
+                  Sin temporada
+                {% endfor %}
+              </li>
+            </ul>
+
+            {% if request.GET.updated == producto.id|stringformat:"s" %}
+              <div class="mt-2 bg-green-100 text-green-700 text-sm px-2 py-1 rounded">
+                ✅ Se agregaron {{ request.GET.cantidad }} piezas aquí!
+              </div>
+            {% endif %}
+
+            <!-- Botón agregar piezas -->
+            <a href="{% url 'inventario:agregar_inventario' producto.id inv.ubicacion.id %}" 
+              class="inline-block bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700">
+              ➕
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% empty %}
+      <p class="text-gray-500 italic">No hay productos en Moderna.</p>
+    {% endfor %}
+  </div>
+</div>
+
+
+
+<!-- Columna: Piso -->
+<div class="dropzone bg-gray-50 rounded-lg shadow-md p-4" data-destino="{{ ubicacion_piso.id }}">
+  <h3 class="text-xl font-semibold text-gray-700 mb-4">🪟 Piso</h3>
+  <div class="space-y-4">
+    {% for producto in productos %}
+      {% for inv in producto.inventarios.all %}
+        {% if inv.ubicacion.nombre == "Piso" and inv.cantidad_actual > 0 %}
+          <div class="bg-white rounded-lg shadow p-4 producto-card"
+               draggable="true"
+               data-producto="{{ producto.id }}"
+               data-origen="{{ inv.ubicacion.id }}"
+               data-nombre="{{ producto.nombre }}"
+               data-descripcion="{{ producto.descripcion }}"
+               data-categoria="{% for cat in producto.categoria.all %}{{ cat.nombre }} {% endfor %}"
+               data-temporada="{% for temp in producto.temporada.all %}{{ temp.nombre }} {% endfor %}">
+
+            <!-- Botón y contenedor de etiqueta -->
+            <div class="mb-2">
+              {% if producto.codigo_barras and producto.tipo_codigo %}
+                <button onclick="mostrarEtiqueta(this)"
+                        data-url="{% url 'inventario:codigo_base64' producto.id %}"
+                        data-id="{{ producto.id }}"
+                        data-ubicacion="{{ inv.ubicacion.id }}"
+                        class="text-blue-600 hover:underline text-sm">
+                  <i class="fa-solid fa-barcode mr-1"></i> Ver etiqueta
+                </button>
+                <div id="etiqueta-{{ producto.id }}-{{ inv.ubicacion.id }}"
+                     class="mt-2 etiqueta-container bg-gray-50 border border-gray-200 rounded p-3 text-center text-sm shadow-sm"
+                     style="display: none;">
+                  <img id="img-{{ producto.id }}-{{ inv.ubicacion.id }}" class="h-20 mx-auto mb-2" />
+                  <div class="text-gray-700 font-mono tracking-widest">{{ producto.codigo_barras }}</div>
+                  <div class="text-xs text-gray-500 italic mt-1">Tipo: {{ producto.tipo_codigo|upper }}</div>
+                  <div class="flex justify-center gap-2 mt-3">
+                    <button onclick="imprimirEtiqueta('{{ producto.id }}','{{ inv.ubicacion.id }}')"
+                            class="text-xs text-white bg-blue-600 px-2 py-1 rounded">🖨️ Imprimir</button>
+                    <button onclick="descargarEtiqueta('{{ producto.id }}','{{ inv.ubicacion.id }}')"
+                            class="text-xs text-white bg-green-600 px-2 py-1 rounded">⬇️ Descargar</button>
+                  </div>
+                </div>
+              {% else %}
+                <span class="text-gray-400 italic text-sm">Sin código</span>
+              {% endif %}
+            </div>
+
+            <!-- Info del producto -->
+            <h4 class="text-lg font-bold text-gray-800">{{ producto.nombre }}</h4>
+            <p class="text-sm text-gray-600">{{ producto.descripcion }}</p>
+
+            <ul class="mt-3 text-sm text-gray-700 space-y-1">
+              <li>• Menudeo: ${{ producto.precio_menudeo }}</li>
+              <li>• Mayoreo: ${{ producto.precio_mayoreo }}</li>
+              <li>• Docena: ${{ producto.precio_docena }}</li>
+              <li>• Categoría:
+                {% for cat in producto.categoria.all %}
+                  {% if cat.padre %}
+                    <span class="block text-sm text-gray-700">Padre: {{ cat.padre.nombre }}</span>
+                    <span class="block text-sm text-gray-700">Subcategoría: {{ cat.nombre }}</span>
+                  {% endif %}
+                {% endfor %}
+              </li>
+              <li>• Cantidad: {{ inv.cantidad_actual }}</li>
+              <li>• Temporada:
+                {% for temp in producto.temporada.all %}
+                  {{ temp.nombre }}
+                {% empty %}
+                  Sin temporada
+                {% endfor %}
+              </li>
+            </ul>
+
+            {% if request.GET.updated == producto.id|stringformat:"s" %}
+              <div class="mt-2 bg-green-100 text-green-700 text-sm px-2 py-1 rounded">
+                ✅ Se agregaron {{ request.GET.cantidad }} piezas aquí!
+              </div>
+            {% endif %}
+
+            <!-- Botón agregar piezas -->
+            <a href="{% url 'inventario:agregar_inventario' producto.id inv.ubicacion.id %}" 
+              class="inline-block bg-green-600 text-white px-2 py-1 rounded text-xs hover:bg-green-700">
+              ➕
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% empty %}
+      <p class="text-gray-500 italic">No hay productos en Piso.</p>
+    {% endfor %}
+  </div>
+</div>
+
+
+<div id="transferenciaModal" 
+     class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
+  <div id="transferenciaContent"
+       class="bg-white rounded-xl shadow-2xl p-6 w-96 transform transition-all scale-95">
+    <h3 class="text-xl font-bold text-gray-800 mb-4">🔄 Transferir Inventario</h3>
+
+    <!-- Formulario con AJAX -->
+    <form method="post" 
+          action="{% url 'inventario:transferir_inventario' %}" 
+          class="space-y-4"
+          onsubmit="confirmarTransferencia(event)">
+      {% csrf_token %}
+      <input type="hidden" name="producto" id="producto_id">
+      <input type="hidden" name="origen" id="origen_id">
+      <input type="hidden" name="destino" id="destino_id">
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Cantidad</label>
+        <input type="number" name="cantidad" min="1"
+               class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-500 focus:border-blue-500">
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button type="button" onclick="cerrarModal()"
+                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+          Cancelar
+        </button>
+        <button type="submit"
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition">
+          Transferir
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/mostraretiqueta.js' %}"></script>
+<script src="{% static 'js/transferir_inventario.js' %}"></script>
+{% endblock %}
+
+
+
+
+

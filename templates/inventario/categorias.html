@@ -1,0 +1,150 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <h2 class="text-3xl font-bold mb-8 text-center text-gray-800">📦 Categorías de productos</h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for categoria in categorias %}
+      {% if not categoria.padre %}
+        <div class="bg-white rounded-md shadow-sm p-4 border border-gray-200 hover:shadow-md transition w-full">
+          <h3 class="text-base font-semibold text-red-600 mb-2 text-center">{{ categoria.nombre }}</h3>
+
+          {% if mostrar_formulario %}
+            <form method="POST" action="{% url 'inventario:categorias' %}" class="mb-4">
+              {% csrf_token %}
+              <input type="hidden" name="categoria_id" value="{{ categoria.id }}">
+
+              <label for="descripcion-{{ categoria.id }}" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea name="descripcion"
+                        id="descripcion-{{ categoria.id }}"
+                        rows="6"
+                        class="form-control w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition">
+{{ categoria.descripcion }}</textarea>
+
+              <button type="submit"
+                      class="btn-submit w-full flex justify-center items-center gap-2 mt-2 bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition">
+                <span>Guardar descripción</span>
+              </button>
+            </form>
+          {% else %}
+            {% with categoria.descripcion.splitlines as lineas %}
+              {% for linea in lineas %}
+                {% if linea %}
+                  {% if linea|slice:":1" == "*" or linea|slice:":1" == "-" %}
+                    <li class="text-sm text-gray-600 list-disc list-inside">{{ linea|slice:"1:" }}</li>
+                  {% else %}
+                    <p class="text-sm text-gray-700 mb-2">{{ linea }}</p>
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endwith %}
+          {% endif %}
+
+          {% if categoria.subcategorias.all %}
+            <div class="mt-3">
+              <h4 class="text-sm font-semibold text-gray-800 mb-1">Subcategorías registradas</h4>
+              <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                {% for sub in categoria.subcategorias.all %}
+                  <li><strong>{{ sub.nombre }}</strong> → {{ sub.descripcion }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% else %}
+            <p class="text-xs text-gray-500 italic">No hay subcategorías registradas aún.</p>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if mostrar_formulario %}
+    <div class="max-w-xl mx-auto bg-white shadow-lg rounded-xl p-6 mt-12">
+      <h3 class="text-xl font-semibold mb-6 text-center text-red-600">Registrar nueva categoría</h3>
+      <form method="POST" action="{% url 'inventario:categorias' %}" id="form-registro">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+          <div class="text-red-500 text-sm mb-4">
+            {{ form.non_field_errors }}
+          </div>
+        {% endif %}
+
+        <div class="mb-4">
+          <label for="{{ form.nombre.id_for_label }}" class="block text-sm font-medium text-gray-700">Nombre</label>
+          {{ form.nombre }}
+          {% if form.nombre.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.nombre.errors }}</p>
+          {% endif %}
+        </div>
+
+        <div class="mb-4">
+          <label for="{{ form.descripcion.id_for_label }}" class="block text-sm font-medium text-gray-700">Descripción</label>
+          {{ form.descripcion }}
+          {% if form.descripcion.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.descripcion.errors }}</p>
+          {% endif %}
+        </div>
+
+        <div class="form-group mb-4">
+          <label for="slide-switch" class="block text-sm font-medium text-gray-700 mb-2">¿Es subcategoría?</label>
+          <label class="switch">
+            <input type="checkbox" id="slide-switch" name="es_subcategoria">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div id="padre-container" class="mb-4 hidden opacity-0 scale-95 transition-all duration-300 ease-out">
+          <label for="{{ form.padre.id_for_label }}" class="block text-sm font-medium text-gray-700">Selecciona la categoría padre</label>
+          {{ form.padre }}
+          {% if form.padre.errors %}
+            <p class="text-red-500 text-sm mt-1">{{ form.padre.errors }}</p>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn-submit w-full flex justify-center items-center gap-2" id="btn-submit">
+          <span>Registrar categoría</span>
+          <span class="spinner hidden" id="btn-spinner"></span>
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div class="max-w-xl mx-auto bg-white shadow-md rounded-md p-4 mt-12 border border-gray-200">
+      <h3 class="text-sm font-semibold text-center text-red-500 mb-2">Modo solo lectura</h3>
+      <p class="text-xs text-gray-600 text-center">
+        Puedes consultar las categorías y subcategorías, pero no tienes permisos para modificarlas ni registrar nuevas.
+      </p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const slideSwitch = document.getElementById("slide-switch");
+    const padreContainer = document.getElementById("padre-container");
+
+    if (slideSwitch && padreContainer) {
+      const togglePadreField = () => {
+        if (slideSwitch.checked) {
+          padreContainer.classList.remove("hidden");
+          setTimeout(() => {
+            padreContainer.classList.add("opacity-100", "scale-100");
+            padreContainer.classList.remove("opacity-0", "scale-95");
+          }, 10);
+        } else {
+          padreContainer.classList.remove("opacity-100", "scale-100");
+          padreContainer.classList.add("opacity-0", "scale-95");
+          setTimeout(() => {
+            padreContainer.classList.add("hidden");
+          }, 300);
+        }
+      };
+
+      togglePadreField();
+      slideSwitch.addEventListener("change", togglePadreField);
+    }
+  });
+</script>
+{% endblock %}

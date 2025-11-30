@@ -33,7 +33,8 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 
 
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.100.21', 'localhost', '127.0.0.1', '192.168.137.122', '192.168.0.56']
+
 
 
 # Application definition
@@ -45,11 +46,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "Tienda",
-    #"Inventario",
+    "tienda",
+    "inventario",
 ]
 #Agrego authenticacion manual para extender el campo tipo
-AUTH_USER_MODEL = 'Tienda.Usuario'
+AUTH_USER_MODEL = 'tienda.Usuario'
 
 
 
@@ -68,14 +69,13 @@ ROOT_URLCONF = 'main.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'Tienda', 'templates', 'partials')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],      
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'Tienda.context_processor.tipo_usuario',
             ],
         },
     },
@@ -133,6 +133,11 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+#Manejo de archivos multimedia 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

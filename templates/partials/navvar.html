@@ -1,0 +1,113 @@
+{% load static %}
+
+<nav id="navbar" class="bg-red-600 text-white sticky top-0 z-50 shadow-md transition-transform duration-300">
+  <div class="container mx-auto px-4 py-3 flex items-center justify-between relative">
+    <!-- Logo -->
+    <div class="flex-shrink-0">
+      <h1 class="text-xl md:text-2xl font-bold">
+        <a href="{% url 'landing' %}" class="no-underline">Comercializadora Modelo</a>
+      </h1>
+    </div>
+
+    <!-- Menú principal (desktop) -->
+    <div class="hidden md:flex flex-1 justify-center space-x-6">
+      {% if request.user.is_authenticated %}
+        {% if request.user.is_superuser %}
+          <a href="{% url 'tienda:dashboard_dueno' %}" class="nav-link">Dashboard</a>
+          <a href="{% url 'inventario:categorias' %}" class="nav-link">Categorías</a>
+          <a href="/ventas/" class="nav-link">Ventas</a>
+          <a href="{% url 'inventario:lista_productos' %}" class="nav-link">Productos</a>
+        {% elif request.user.empleado %}
+          {% if request.user.empleado.rol == 'dueño' %}
+            <a href="{% url 'tienda:dashboard_dueno' %}" class="nav-link">Dashboard</a>
+            <a href="{% url 'inventario:categorias' %}" class="nav-link">Categorías</a>
+            <a href="/ventas/" class="nav-link">Ventas</a>
+            <a href="{% url 'inventario:lista_productos' %}" class="nav-link">Productos</a>
+          {% else %}
+            <a href="{% url 'tienda:dashboard_socio' %}" class="nav-link">Dashboard</a>
+            <a href="/ventas/" class="nav-link">Ventas</a>
+            <a href="{% url 'inventario:lista_productos' %}" class="nav-link">Productos</a>
+          {% endif %}
+        {% elif request.user.cliente %}
+          <a href="{% url 'landing' %}" class="nav-link">Inicio</a>
+          <a href="/productos/" class="nav-link">Productos</a>
+          <a href="/comprar/" class="nav-link">Comprar ahora</a>
+          <a href="/mayoristas/" class="nav-link">Atención mayorista</a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'landing' %}" class="nav-link">Inicio</a>
+        <a href="{% url 'about-us' %}" class="nav-link">Sobre nosotros</a>
+        <a href="{% url 'contacto' %}" class="nav-link">Contacto</a>
+      {% endif %}
+    </div>
+
+    <!-- Autenticación / Perfil (desktop) -->
+    <div class="hidden md:flex space-x-2 items-center">
+      {% if request.user.is_authenticated %}
+        <div class="relative">
+          <button id="profileMenuBtn" class="w-9 h-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold focus:outline-none">
+            {{ request.user.username|slice:":1"|upper }}
+          </button>
+          <div id="profileDropdown" class="hidden absolute top-full right-0 mt-2 w-48 bg-white border rounded shadow-lg z-50 text-gray-800">
+            <a href="{% url 'profile_settings' %}" class="block px-4 py-2 hover:bg-gray-100">Configuración</a>
+            <form method="post" action="{% url 'tienda:logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600">Cerrar sesión</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+        <a href="{% url 'tienda:login' %}" class="btn-auth bg-white text-red-600 font-bold border-2 border-red-600 hover:bg-red-100 hover:text-red-700 shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out">Iniciar sesión</a>
+        <a href="{% url 'tienda:registro_cliente' %}" class="btn-auth bg-white text-green-600 font-bold border-2 border-green-600 hover:bg-green-100 hover:text-green-700 shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out">Registrarse</a>
+      {% endif %}
+    </div>
+
+    <!-- Botón hamburguesa (móvil) -->
+    <button id="menu-toggle" class="md:hidden text-white focus:outline-none ml-2">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
+           viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round"
+              d="M4 6h16M4 12h16M4 18h16"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Menú móvil -->
+  <div id="menu" class="md:hidden absolute top-full left-0 w-full bg-red-600 text-white shadow-lg flex-col space-y-3 px-4 py-4 z-40 opacity-0 pointer-events-none transform -translate-y-4 transition-all duration-300 ease-in-out">
+    {% if request.user.is_authenticated %}
+      {% if request.user.is_superuser %}
+        <a href="{% url 'inventario:categorias' %}" class="nav-link block w-full text-center">Categorías</a>
+        <a href="/ventas/" class="nav-link block w-full text-center">Ventas</a>
+        <a href="{% url 'tienda:dashboard_dueno' %}" class="nav-link block w-full text-center">Dashboard</a>
+        <a href="{% url 'inventario:lista_productos' %}" class="nav-link block w-full text-center">Productos</a>
+      {% elif request.user.empleado %}
+        {% if request.user.empleado.rol == 'dueño' %}
+          <a href="{% url 'inventario:categorias' %}" class="nav-link block w-full text-center">Categorías</a>
+          <a href="/ventas/" class="nav-link block w-full text-center">Ventas</a>
+          <a href="{% url 'tienda:dashboard_dueno' %}" class="nav-link block w-full text-center">Dashboard</a>
+          <a href="{% url 'inventario:lista_productos' %}" class="nav-link block w-full text-center">Productos</a>
+        {% else %}
+          <a href="/ventas/" class="nav-link block w-full text-center">Ventas</a>
+          <a href="{% url 'tienda:dashboard_socio' %}" class="nav-link block w-full text-center">Dashboard</a>
+          <a href="{% url 'inventario:lista_productos' %}" class="nav-link block w-full text-center">Productos</a>
+        {% endif %}
+      {% elif request.user.cliente %}
+        <a href="{% url 'landing' %}" class="nav-link block w-full text-center">Inicio</a>
+        <a href="{% url 'inventario:lista_productos' %}" class="nav-link block w-full text-center">Productos</a>
+        <a href="/comprar/" class="nav-link block w-full text-center">Comprar ahora</a>
+        <a href="/mayoristas/" class="nav-link block w-full text-center">Atención mayorista</a>
+      {% endif %}
+      <a href="{% url 'profile_settings' %}" class="nav-link block w-full text-center">Configuración</a>
+      <form method="post" action="{% url 'tienda:logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-auth block w-full text-center text-red-600 hover:bg-red-100">Cerrar sesión</button>
+      </form>
+    {% else %}
+      <a href="{% url 'landing' %}" class="nav-link block w-full text-center">Inicio</a>
+      <a href="{% url 'about-us' %}" class="nav-link block w-full text-center">Sobre nosotros</a>
+      <a href="{% url 'contacto' %}" class="nav-link block w-full text-center">Contacto</a>
+      <a href="{% url 'tienda:login' %}" class="btn-auth block w-full text-center bg-white text-red-600 font-bold border-2 border-red-600 hover:bg-red-100 hover:text-red-700 shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out">Iniciar sesión</a>
+      <a href="{% url 'tienda:registro_cliente' %}" class="btn-auth block w-full text-center bg-white text-green-600 font-bold border-2 border-green-600 hover:bg-green-100 hover:text-green-700 shadow-md transform hover:scale-105 transition-all duration-300 ease-in-out">Registrarse</a>
+    {% endif %}
+  </div>
+</nav>

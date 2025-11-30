@@ -1,0 +1,110 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6 text-center">Registrar nuevo producto</h2>
+
+<form method="post" enctype="multipart/form-data" class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md">
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="mb-4 text-red-600 font-semibold">
+      {{ form.non_field_errors }}
+    </div>
+  {% endif %}
+
+  <!-- Campos del formulario -->
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.nombre.id_for_label }}">{{ form.nombre.label }}</label>
+    {{ form.nombre }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.descripcion.id_for_label }}">{{ form.descripcion.label }}</label>
+    {{ form.descripcion }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.codigo_barras.id_for_label }}">{{ form.codigo_barras.label }}</label>
+    {{ form.codigo_barras }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.precio_mayoreo.id_for_label }}">{{ form.precio_mayoreo.label }}</label>
+    {{ form.precio_mayoreo }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.precio_menudeo.id_for_label }}">{{ form.precio_menudeo.label }}</label>
+    {{ form.precio_menudeo }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.precio_docena.id_for_label }}">{{ form.precio_docena.label }}</label>
+    {{ form.precio_docena }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.foto_url.id_for_label }}">{{ form.foto_url.label }}</label>
+    {{ form.foto_url }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.temporada.id_for_label }}">{{ form.temporada.label }}</label>
+    {{ form.temporada }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.ubicacion.id_for_label }}">{{ form.ubicacion.label }}</label>
+    {{ form.ubicacion }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.dueño.id_for_label }}">{{ form.dueño.label }}</label>
+    {{ form.dueño }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.categoria_padre.id_for_label }}">{{ form.categoria_padre.label }}</label>
+    {{ form.categoria_padre }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.subcategoria.id_for_label }}">{{ form.subcategoria.label }}</label>
+    {{ form.subcategoria }}
+  </div>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1" for="{{ form.cantidad_inicial.id_for_label }}">{{ form.cantidad_inicial.label }}</label>
+    {{ form.cantidad_inicial }}
+    {% if form.cantidad_inicial.help_text %}
+      <small class="text-gray-600">{{ form.cantidad_inicial.help_text }}</small>
+    {% endif %}
+  </div>
+
+  {{ form.tipo_codigo }}
+
+  <div id="atributos-container" class="mb-4"></div>
+
+  <div id="atributos-data" style="display: none;">
+    {% for atributo in atributos %}
+      <div data-categoria="{{ atributo.categoria.id }}" data-id="{{ atributo.id }}" data-nombre="{{ atributo.nombre }}"></div>
+    {% endfor %}
+  </div>
+
+  <div id="subcategorias-data" style="display: none;">
+    {% for sub in subcategorias %}
+      <div data-id="{{ sub.id }}" data-nombre="{{ sub.nombre }}" data-padre="{{ sub.padre.id }}"></div>
+    {% endfor %}
+  </div>
+
+  <button id="submit-btn" type="submit" class="bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition">
+    Registrar producto
+  </button>
+</form>
+
+
+{% block scripts %}
+<script src="{% static 'js/nuevo_producto.js' %}"></script>
+{% endblock %}
+{% endblock %}

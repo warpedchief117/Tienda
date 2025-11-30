@@ -1,42 +1,43 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+# Usuario base extendido
 class Usuario(AbstractUser):
-    TIPO_USUARIO = [
-        ('cliente', 'Cliente'),
-        ('empleado', 'Empleado'),
-    ]
-    tipo = models.CharField(max_length=10, choices=TIPO_USUARIO)
-    email = models.EmailField(unique=True)  # sobrescribe el campo original
-    def __str__(self):
-        return f"{self.username} ({self.tipo})"
-    
-    
+    email = models.EmailField(unique=True)
 
-class Empleado(models.Model):
+    def __str__(self):
+        return self.username
+
+# Clase abstracta para compartir campos comunes
+class PerfilBase(models.Model):
+    direccion = models.CharField(max_length=255)
+    numero_contacto = models.CharField(max_length=20)
+
+    class Meta:
+        abstract = True
+
+# Perfil de empleado
+class Empleado(PerfilBase):
+    user = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='empleado')
+
     ROL_CHOICES = [
         ('cajero', 'Cajero'),
         ('ayudante', 'Ayudante General'),
         ('almacenista', 'Almacenista'),
-        ('dueño', 'Dueño'),  # dueño se esconde del dropdown 
+        ('dueño', 'Dueño'),
     ]
-    user = models.OneToOneField(Usuario, on_delete=models.CASCADE)    
+
     edad = models.IntegerField(null=True, blank=True)
-    direccion = models.CharField(blank=True)
-    numero_contacto = models.CharField(max_length=20)
     rol = models.CharField(max_length=50, choices=ROL_CHOICES)
     contacto_emergencia = models.CharField(max_length=100)
     descripcion_contacto_emergencia = models.TextField(max_length=100)
-    
 
     def __str__(self):
-        return f"{self.user} ({self.rol})"
-    
+        return f"{self.user.username} ({self.rol})"
 
-class Cliente(models.Model):
-    user = models.OneToOneField(Usuario, on_delete=models.CASCADE)
-    direccion = models.CharField(max_length=255)
-    numero_contacto = models.CharField(max_length=20)
+# Perfil de cliente
+class Cliente(PerfilBase):
+    user = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='cliente')
 
     def __str__(self):
         return f"{self.user.username} (Cliente)"

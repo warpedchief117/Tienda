@@ -9,8 +9,8 @@
   <div class="bg-white rounded-2xl shadow-xl p-8 max-w-2xl w-full text-gray-700 animate__animated animate__fadeInDown" data-aos="fade-down">
     <h2 class="text-3xl font-bold text-red-600 mb-4 text-center">Información de la tienda</h2>
     <ul class="space-y-3 text-lg">
-      <li><strong>📍 Dirección:</strong> Tatata</li>
-      <li><strong>🕒 Horario:</strong> Tatat</li>
+      <li><strong>📍 Dirección:</strong> 15 de mayo #220 PTE. Col. Centro, Monterrey, Nuevo León</li>
+      <li><strong>🕒 Horario:</strong> Lunes a sabado de 10 a.m. a 7:30 p.m. , Domingos de 10 a.m. a 6 p.m.</li>
       <li><strong>📞 Teléfono:</strong> +52 81 1234 5678</li>
       <li><strong>✉️ Email:</strong> contacto@comercializadoramodelo.mx</li>
     </ul>
@@ -49,9 +49,17 @@
         {{ form.mensaje }}
       </div>
 
-      <button type="submit" class="btn-submit">
-        <span>Enviar mensaje</span>
-      </button>
+     {% if puede_enviar %}
+  <button type="submit"
+          class="btn-submit">
+    Enviar mensaje
+  </button>
+    {% elif request.user.is_authenticated %}
+      <p class="text-center text-sm text-red-500">No tienes permiso para enviar mensajes.</p>
+    {% else %}
+      <p class="text-center text-sm text-gray-500">Inicia sesión como cliente para enviar mensajes.</p>
+    {% endif %}
+
     </form>
   </div>
 </section>
